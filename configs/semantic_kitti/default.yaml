@@ -9,7 +9,8 @@ train:
 
 dataset:
   name: semantic_kitti
-  root: /dataset/semantic-kitti
+  # root: /dataset/semantic-kitti
+  # root: /home/garrett/Documents/data/tmp/dataset/sequences
   num_points: 80000
   voxel_size: 0.05
 

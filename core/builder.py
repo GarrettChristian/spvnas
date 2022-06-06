@@ -12,10 +12,13 @@ __all__ = [
 ]
 
 
-def make_dataset() -> Dataset:
+def make_dataset(dataDir) -> Dataset:
     if configs.dataset.name == 'semantic_kitti':
         from core.datasets import SemanticKITTI
-        dataset = SemanticKITTI(root=configs.dataset.root,
+        # dataset = SemanticKITTI(root=configs.dataset.root,
+        #                         num_points=configs.dataset.num_points,
+        #                         voxel_size=configs.dataset.voxel_size)
+        dataset = SemanticKITTI(root=dataDir,
                                 num_points=configs.dataset.num_points,
                                 voxel_size=configs.dataset.voxel_size)
     else:

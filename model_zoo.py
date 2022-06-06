@@ -122,3 +122,13 @@ def spvcnn(net_id, pretrained=True, **kwargs):
                           if torch.cuda.is_available() else 'cpu')['model']
         model.load_state_dict(init)
     return model
+
+
+
+
+# modelName = "SemanticKITTI_val_SPVCNN@119GMACs"
+# modelNameFull = "SemanticKITTI_val_SPVNAS@65GMACs"
+
+
+# spvcnn(modelName)
+

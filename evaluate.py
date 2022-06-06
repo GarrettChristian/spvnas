@@ -1,4 +1,5 @@
 import argparse
+from email.policy import default
 import sys
 
 import torch
@@ -18,6 +19,67 @@ from core.callbacks import MeanIoU
 from core.trainers import SemanticKITTITrainer
 from model_zoo import minkunet, spvcnn, spvnas_specialized
 
+import numpy as np
+import os
+
+train_label_name_mapping = {
+        0: 'car',
+        1: 'bicycle',
+        2: 'motorcycle',
+        3: 'truck',
+        4: 'other-vehicle',
+        5: 'person',
+        6: 'bicyclist',
+        7: 'motorcyclist',
+        8: 'road',
+        9: 'parking',
+        10: 'sidewalk',
+        11: 'other-ground',
+        12: 'building',
+        13: 'fence',
+        14: 'vegetation',
+        15: 'trunk',
+        16: 'terrain',
+        17: 'pole',
+        18: 'traffic-sign'
+    }
+
+name_label_mapping = {
+        'unlabeled': 0,
+        'outlier': 1,
+        'car': 10,
+        'bicycle': 11,
+        'bus': 13,
+        'motorcycle': 15,
+        'on-rails': 16,
+        'truck': 18,
+        'other-vehicle': 20,
+        'person': 30,
+        'bicyclist': 31,
+        'motorcyclist': 32,
+        'road': 40,
+        'parking': 44,
+        'sidewalk': 48,
+        'other-ground': 49,
+        'building': 50,
+        'fence': 51,
+        'other-structure': 52,
+        'lane-marking': 60,
+        'vegetation': 70,
+        'trunk': 71,
+        'terrain': 72,
+        'pole': 80,
+        'traffic-sign': 81,
+        'other-object': 99,
+        'moving-car': 252,
+        'moving-bicyclist': 253,
+        'moving-person': 254,
+        'moving-motorcyclist': 255,
+        'moving-on-rails': 256,
+        'moving-bus': 257,
+        'moving-truck': 258,
+        'moving-other-vehicle': 259
+    }
 
 def main() -> None:
     dist.init()
@@ -29,6 +91,8 @@ def main() -> None:
     parser.add_argument('config', metavar='FILE', help='config file')
     parser.add_argument('--run-dir', metavar='DIR', help='run directory')
     parser.add_argument('--name', type=str, help='model name')
+    parser.add_argument('--data-dir', type=str, help='Location of data')
+    parser.add_argument('--save-dir', type=str, help='Location to save labels')
     args, opts = parser.parse_known_args()
 
     configs.load(args.config, recursive=True)
@@ -42,7 +106,7 @@ def main() -> None:
     logger.info(' '.join([sys.executable] + sys.argv))
     logger.info(f'Experiment started: "{args.run_dir}".' + '\n' + f'{configs}')
 
-    dataset = builder.make_dataset()
+    dataset = builder.make_dataset(args.data_dir)
     dataflow = {}
     for split in dataset:
         sampler = torch.utils.data.distributed.DistributedSampler(
@@ -118,10 +182,33 @@ def main() -> None:
             targets_mapped = all_labels.F[cur_label]
             _outputs.append(outputs_mapped)
             _targets.append(targets_mapped)
+            
+            # print()
+            # print(idx)
+            # print(invs.C[:, -1].max())
+            # print(outputs_mapped)
+            # print(outputs_mapped.cpu().numpy())
+            remaped = [name_label_mapping[train_label_name_mapping[lbl]] for lbl in outputs_mapped.cpu().numpy()]
+            
+            # print(remaped)
+            # print(np.shape(outputs_mapped.cpu().numpy()))
+            
+            fileName = feed_dict["file_name"]
+            # print(fileName)
+            fileName = os.path.basename(fileName[0]).replace('.bin', '')
+
+            inv_labels = np.array(remaped).astype('uint32')
+            outputPath = args.save_dir + "/" + fileName + '.label'
+            inv_labels.tofile(outputPath)
+            print("Save " + outputPath)
+
+
         outputs = torch.cat(_outputs, 0)
         targets = torch.cat(_targets, 0)
         output_dict = {'outputs': outputs, 'targets': targets}
         trainer.after_step(output_dict)
+        print("HERE", feed_dict.items())
+
 
     trainer.after_epoch()
 
