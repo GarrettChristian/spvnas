@@ -207,7 +207,7 @@ def main() -> None:
         targets = torch.cat(_targets, 0)
         output_dict = {'outputs': outputs, 'targets': targets}
         trainer.after_step(output_dict)
-        print("HERE", feed_dict.items())
+        # print("HERE", feed_dict.items())
 
 
     trainer.after_epoch()
