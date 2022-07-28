@@ -1,5 +1,39 @@
 # SPVNAS
 
+Fork for Semantic LiDAR Fuzzer
+
+---
+
+## Setup
+- Edit Dockerfile
+```
+RUN TORCH_CUDA_ARCH_LIST="6.1" FORCE_CUDA=1 pip3 install -v git+https://github.com/mit-han-lab/torchsparse.git@v1.4.0
+```
+- Replace TORCH_CUDA_ARCH_LIST="6.1" with your GPU Architecture: http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+
+## Build Docker Image
+
+```
+cd to spvnas directory
+docker build . -t spvnas_image
+```
+
+
+## Run Docker Image
+- See Sample Run in runSpvnasDocker.sh or in the docker runner of semLidarFuzzer
+
+
+## Remove Docker Container
+```
+docker container stop spvnas && docker container rm spvnas
+```
+
+---
+
+<!-- ORIGINAL -->
+
+# SPVNAS
+
 ### [video](https://youtu.be/zzJR07LMXxs) | [paper](https://arxiv.org/abs/2007.16100) | [website](http://spvnas.mit.edu/) [![](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/mit-han-lab/spvnas/blob/master/tutorial.ipynb)
 
 [Searching Efficient 3D Architectures with Sparse Point-Voxel Convolution](https://arxiv.org/abs/2007.16100)
